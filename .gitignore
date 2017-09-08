@@ -3,3 +3,6 @@
 .project
 .classpath
 tmp-*.html
+deploy_che.sh
+replace_stacks.sh
+wait_until_che*.*

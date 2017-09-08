@@ -1,9 +1,17 @@
 #!/bin/bash
-# Copyright (c) 2012-2017 Red Hat, Inc
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v1.0
-# which accompanies this distribution, and is available at
-# http://www.eclipse.org/legal/epl-v10.html
+#  Copyright (c) 2016 Red Hat, Inc.
+# 
+#   Red Hat licenses this file to you under the Apache License, version
+#   2.0 (the "License"); you may not use this file except in compliance
+#   with the License.  You may obtain a copy of the License at
+#  
+#     http://www.apache.org/licenses/LICENSE-2.0
+#  
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#   implied.  See the License for the specific language governing
+#   permissions and limitations under the License.
 #
 set -e
 
@@ -39,12 +47,14 @@ if [ -z "${CHE_OAUTH_GITHUB_CLIENTSECRET+x}" ]; then echo "[CHE] **ERROR**Env va
 # --------------------------------------------------------
 # Edit  che deployment config 
 # --------------------------------------------------------
+[ -f ./che.json ] && rm -f ./che.json
+
 oc get dc che -ojson  > che.json
 
 HAS_GITHUB_OAUTH_CLIENTID=$(cat che.json | jq '.spec.template.spec.containers[0].env | .[] | select(.name | . and . == "CHE_OAUTH_GITHUB_CLIENTID" )')
 
 if [ "${HAS_GITHUB_OAUTH_CLIENTID}x" == "x" ]; then 
-    cat che-test.json | jq  -r --arg CHE_OAUTH_GITHUB_CLIENTID "$CHE_OAUTH_GITHUB_CLIENTID"  \
+    cat che.json | jq  -r --arg CHE_OAUTH_GITHUB_CLIENTID "$CHE_OAUTH_GITHUB_CLIENTID"  \
     --arg CHE_OAUTH_GITHUB_CLIENTSECRET "$CHE_OAUTH_GITHUB_CLIENTSECRET" \
     --arg CHE_OAUTH_GITHUB_CLIENTSECRET "$CHE_OAUTH_GITHUB_CLIENTSECRET" \
     --arg CHE_OAUTH_GITHUB_AUTHURI "$CHE_OAUTH_GITHUB_AUTHURI" \
