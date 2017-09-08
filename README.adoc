@@ -1,0 +1,97 @@
+= Cloud Workspaces - A new way to Develop and Deploy
+
+https://appdev.openshift.io/[LaunchPad] and https://www.eclipse.org/che[Eclipse Che] provides a great platform that can help you get started with **Cloud Workspaces**.
+
+In this demo we will see how to get the https://appdev.openshift.io/[LaunchPad] and https://www.eclipse.org/che[Eclipse Che] deployed on to single-node OpenShift Cluster locally using minishift and on OpenShift deployed and hosted on cloud.
+
+
+== Pre-requisites 
+
+* Local OpenShift Cluster, https://github.com/minishift/minishift[minishfit] is great option
+* Access to OpenShift cluster deployed on cloud
+* Install jq library locally from https://stedolan.github.io/jq/
+
+== Deployments
+
+The deployment is divided in to following two parts,
+
+* Deploying Che 
+* Deploying LaunchPad
+
+
+Clone the repository github.com/workspace7/cloud-workspaces, let call the location as $PROJECT_HOME
+
+=== Deploying Che
+
+[code,sh]
+----
+cd $PROJECT_HOME/scripts
+DEPLOY_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/deploy_che.sh
+curl -fsSL ${DEPLOY_SCRIPT_URL} -o get-che.sh <1>
+
+WAIT_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/wait_until_che_is_available.sh
+curl -fsSL ${WAIT_SCRIPT_URL} -o wait-che.sh <2>
+
+STACKS_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/replace_stacks.sh
+curl -fsSL ${STACKS_SCRIPT_URL} -o replace_stacks.sh <3>
+
+./deploy_che.sh && ./wait_until_che_is_available.sh  && ./replace_stacks.sh <4>
+
+----
+
+<1> Download load the che deployer script
+<2> A simple script that will poll the OpenShift to see if the che has been deployed locally and available to service
+<3> Replace the out of the box Che application stacks with cleaned up ones, the cleanup is mainly done to avoid running the stack as `root` users, as OpenShift does not allow containers to be run as `root`
+
+Once you have the Che deployed and running, you should now enable it for GitHub intgeration.  To enable Github integration you need to have created a oAuth2 App token in Github, please refer to https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/registering-oauth-apps/[Registering OAuth Apps].
+
+
+Once you have the oAuth2 registration done, add the oAuth2 client id to local environment variable called `CHE_OAUTH_GITHUB_CLIENTID` and oAuth2 client secret to localenvironment variable called `CHE_OAUTH_GITHUB_CLIENTSECRET`.
+
+
+IMPORTANT: Please ensure that the environment variables are available before running the script `enable_github_oauth.sh`
+
+NOTE: the **Authorization callback URL** should be set to `https://che-<your-openshift-project>-$(minishift ip).nip.io`
+
+Once you have setup your github oAuth2, you are all set to configure che with Github integration once you run the following command.
+
+[code,sh]
+----
+./enable_github_oauth.sh
+----
+
+Please note this command will trigger redeployment of che with extra environment variables needed for github integration. You can check the availability of che using `$PROJECT_HOME/wait-che.sh` command
+
+
+For more details on VCS integration with Che please refer http://www.eclipse.org/che/docs/ide/git-svn/index.html#github-oauth[here]
+
+=== Deploying LaunchPad
+
+The LauchPad helps us to create project from template and needed runtime. To deploy launchpad execute the following command,
+
+[code,sh]
+----
+./deploy_launchpad_mission.sh -p <your-openshift-project> -i developer:developer -g <your-github-user>:<your-github-personal-access-token>
+----
+
+[NOTE]
+====
+
+You can obtain a personal access token from https://github.com/settings/tokens, please ensure that the scopes of the token has the following permissions,
+
+* repo
+* admin:repo_hook
+
+====
+
+TIP: You can store the personal access token locally via some environment variable like $MY_DEV_GITHUB_TOKEN, as token can be seen only once
+
+The detail installation instuctions of "LaunchPad" is available https://appdev.openshift.io/docs/minishift-installation.html[here]
+
+
+== Troubleshooting
+
+=== H2 DB lock issue
+
+* Somtimes the che workspaces might now comeup correctly post redeployment, please check the logs of che using `oc logs -f che -n <your-project>` if you see any DB related exception traces, then it means the `H2` database has not released the lock properly. To overcome this just scale down the che using command `oc scale dc che --replicas 0`, wait until che pod is killed, checked using command `oc get pods -w -n <your-openshift-project>`. Once the existing pod is killed, scale up the che pod again using the command `oc scale dc che --replicas 1`, check che status using `$PROJECT_HOME/wait-che.sh` command.
+
