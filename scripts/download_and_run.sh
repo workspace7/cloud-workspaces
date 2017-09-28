@@ -20,20 +20,20 @@ set -e
 [ -f ./replace_stacks.sh ] && rm -f ./replace_stacks.sh
 
 
-DEPLOY_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/deploy_che.sh
+DEPLOY_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/init/modules/openshift/files/scripts/deploy_che.sh
 curl -fsSL ${DEPLOY_SCRIPT_URL} -o deploy_che.sh 
 
-WAIT_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/wait_until_che_is_available.sh
+WAIT_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/init/modules/openshift/files/scripts/wait_until_che_is_available.sh
 curl -fsSL ${WAIT_SCRIPT_URL} -o wait_until_che_is_available.sh 
 
-STACKS_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/cli/scripts/openshift/replace_stacks.sh
+STACKS_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/init/modules/openshift/files/scripts/replace_stacks.sh
 curl -fsSL ${STACKS_SCRIPT_URL} -o replace_stacks.sh 
 
 sed -i'.old0' 's/DEPLOYMENT_TIMEOUT_SEC=120/DEPLOYMENT_TIMEOUT_SEC=300/' wait_until_che_is_available.sh
 
 chmod +x ./*.sh
 
-./deploy_che.sh && ./wait_until_che_is_available.sh  && ./replace_stacks.sh 
+bash ./deploy_che.sh && bash ./wait_until_che_is_available.sh  && bash ./replace_stacks.sh 
 
 ## Download Launchpad deploy script
 [ -f ./deploy_launchpad_mission.sh ] && rm -f ./deploy_launchpad_mission.sh
