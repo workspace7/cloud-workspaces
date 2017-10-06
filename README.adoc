@@ -5,7 +5,7 @@
 
 = Cloud Workspaces - A new way to Develop and Deploy
 
-https://appdev.openshift.io/[launch.openshift.io] and https://www.eclipse.org/che[Eclipse Che] provides a great develper platform that can help you get started with **Cloud Workspaces**. This demo will show how to get the https://appdev.openshift.io/[launch.openshift.io] and https://www.eclipse.org/che[Eclipse Che] deployed on to,
+https://appdev.openshift.io/[launch.openshift.io] and https://www.eclipse.org/che[Eclipse Che] provides a great developer platform that can help you get started with **Cloud Workspaces**. This demo will show how to get the https://appdev.openshift.io/[launch.openshift.io] and https://www.eclipse.org/che[Eclipse Che] deployed on to,
 
  * Single-node **OpenShift Cluster** locally using **minishift**
 
@@ -40,11 +40,12 @@ cd $PROJECT_HOME/scripts
 ./download_and_run.sh <1>
 ----
 
-<1> All in one script that does download all the reuqired scripts for the demo and deploy che on to minishift in a project called `eclipse-che`
+<1> All in one script that does download all the required scripts for the demo and deploy che on to minishift in a project called `eclipse-che`
 
 [NOTE]
 ====
-The timeout of che deployment is set to `120` seconds, this script will increase it to `300` seconds, sometimes `./wait_until_che_is_available.sh` might timeout depending on your local network bandwidth. If throws timeout error , then you can execute `./wait_until_che_is_available.sh && ./replace_stacks.sh` until you see it is sucessfull
+* The download scripts just does what is mentioned https://www.eclipse.org/che/docs/setup/openshift/index.html[OpenShift Installation]
+* The timeout of che deployment is set to `120` seconds, this script will increase it to `300` seconds, sometimes `./wait_until_che_is_available.sh` might timeout depending on your local network bandwidth. If throws timeout error , then you can execute `./wait_until_che_is_available.sh && ./replace_stacks.sh` until you see it is sucessfull
 ====
 
 ===== Accessing Che
@@ -90,7 +91,7 @@ export CHE_OAUTH_GITHUB_CLIENTSECRET='your-gituhub-aouth2-client-id'<1>
 
 Please note this command will trigger redeployment of che with extra environment variables needed for github integration. You can check the availability of che using `$PROJECT_HOME/wait-che.sh` command
 
-The updated che deployment config will have the following addtional ENV variables ,
+The updated che deployment config will have the following additional ENV variables ,
 
 image::updated_dc_envs.png[]
 
@@ -150,5 +151,5 @@ image::OpenShift_Web_Console.png[]
 
 === H2 DB lock issue
 
-* Somtimes the che workspaces might now comeup correctly post redeployment, please check the logs of che using `oc logs -f che -n <your-project>` if you see any DB related exception traces, then it means the `H2` database has not released the lock properly. To overcome this just scale down the che using command `oc scale dc che --replicas 0`, wait until che pod is killed, checked using command `oc get pods -w -n <your-openshift-project>`. Once the existing pod is killed, scale up the che pod again using the command `oc scale dc che --replicas 1`, check che status using `$PROJECT_HOME/wait-che.sh` command.
+* Sometimes the che workspaces might not comeup correctly post redeployment, please check the logs of che using `oc logs -f che -n <your-project>` if you see any DB related exception traces, then it means the `H2` database has not released the lock properly. To overcome this just scale down the che using command `oc scale dc che --replicas 0`, wait until che pod is killed, checked using command `oc get pods -w -n <your-openshift-project>`. Once the existing pod is killed, scale up the che pod again using the command `oc scale dc che --replicas 1`, check che status using `$PROJECT_HOME/wait-che.sh` command.
 
