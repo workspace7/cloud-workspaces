@@ -19,7 +19,6 @@ set -e
 [ -f ./wait_until_che_is_available.sh ] && rm -f ./wait_until_che_is_available.sh
 [ -f ./replace_stacks.sh ] && rm -f ./replace_stacks.sh
 
-
 DEPLOY_SCRIPT_URL=https://raw.githubusercontent.com/eclipse/che/master/dockerfiles/init/modules/openshift/files/scripts/deploy_che.sh
 curl -fsSL ${DEPLOY_SCRIPT_URL} -o deploy_che.sh 
 
